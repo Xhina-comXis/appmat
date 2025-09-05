@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Editável - Matemática</title>
+
+    <style>
+        /* Importando a fonte estilo pixel */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        /* Estilos Globais */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background-color: #d8d8e8;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Contêiner principal para simular a tela do celular */
+        .container {
+            width: 100%;
+            max-width: 460px;
+            height: 100vh;
+            background-color: #f7f3e9;
+            border-left: 10px solid #c8bfe7;
+            border-right: 10px solid #c8bfe7;
+            border-top: 15px solid #a89fce;
+            border-bottom: 15px solid #a89fce;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto;
+            /* Adiciona 90px de espaço no fundo para a navegação */
+            padding: 20px 20px 90px 20px; 
+        }
+        
+        /* Controle das páginas */
+        .page {
+            display: none; /* Esconde todas as páginas por padrão */
+            /* A linha height: 100% foi removida daqui para corrigir o bug da rolagem */
+        }
+        .page.active {
+            display: flex; /* Mostra a página ativa */
+            flex-direction: column;
+        }
+
+
+        /* Barra de Navegação Inferior */
+        nav.bottom-nav {
+            width: 100%;
+            background-color: #f07b7b;
+            padding: 10px 0;
+            border-top: 4px solid #4a4a4a;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 10; /* Garante que a nav fique por cima */
+        }
+
+        nav.bottom-nav a {
+            cursor: pointer;
+            filter: drop-shadow(2px 2px 0 #4a4a4a);
+        }
+
+        nav.bottom-nav img {
+            width: 50px;
+            height: 50px;
+        }
+        
+        #nav-back-button {
+            display: none; /* Escondido por padrão */
+        }
+
+        /* Estilos da Página Inicial */
+        .home-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            text-align: center;
+            min-height: 100%; /* Usa min-height para centralizar se o conteúdo for pouco */
+        }
+
+        .character-img {
+            width: 150px;
+            filter: drop-shadow(3px 3px 0 #4a4a4a);
+        }
+
+        .speech-bubble {
+            background-color: #f89d9d;
+            border: 3px solid #4a4a4a;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 26px;
+            line-height: 1.2;
+            position: relative;
+            width: 90%;
+            filter: drop-shadow(3px 3px 0 #4a4a4a);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Estilos da Página de Tópicos */
+        .topics-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .topic-button {
+            cursor: pointer;
+            text-decoration: none;
+            color: #000;
+            font-size: 26px;
+            padding: 18px;
+            border: 3px solid #4a4a4a;
+            border-radius: 15px;
+            text-align: center;
+            filter: drop-shadow(4px 4px 0 #4a4a4a);
+            font-weight: bold;
+            transition: all 0.1s ease-in-out;
+        }
+
+        .topic-button:active {
+            filter: drop-shadow(1px 1px 0 #4a4a4a);
+            transform: translate(3px, 3px);
+        }
+
+        .topic-button.geometria { background-color: #f88379; }
+        .topic-button.analise { background-color: #fdd79f; }
+        .topic-button.algebra { background-color: #fff6a8; }
+        .topic-button.combinatoria { background-color: #c9f8a0; }
+        .topic-button.probabilidade { background-color: #a4f5f5; }
+        .topic-button.sequencias { background-color: #a4c9f5; }
+        .topic-button.aritmetica { background-color: #d4a4f5; }
+        .topic-button.desafio { background-color: #dcdcdc; }
+
+        /* Estilos das Páginas de Conteúdo */
+        .content-page {
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #4a4a4a;
+            font-size: 24px;
+            line-height: 1.3;
+        }
+        .content-page.geometria-bg { background-color: #f88379; }
+        .content-page.analise-bg { background-color: #fdd79f; }
+        .content-page.algebra-bg { background-color: #fff6a8; }
+        .content-page.combinatoria-bg { background-color: #c9f8a0; }
+        .content-page.probabilidade-bg { background-color: #a4f5f5; }
+        .content-page.sequencias-bg { background-color: #a4c9f5; }
+        .content-page.aritmetica-bg { background-color: #d4a4f5; }
+
+        .content-page h1 {
+            font-size: 34px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .content-page p {
+            margin-bottom: 10px;
+        }
+
+        /* Estilos da Página de Recompensas */
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .reward-item img {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <main>
+            <div id="page-home" class="page active">
+                <div class="home-content">
+                    <div id="quote1" class="speech-bubble">
+                        <p>O importante é dar um passo por vez — e você já deu mais um!</p>
+                    </div>
+                    <div id="quote2" class="speech-bubble hidden">
+                        <p>Você não precisa ser perfeito, só precisa continuar.</p>
+                    </div>  
+                    <img src="zoro.png" alt="Personagem Motivacional" class="character-img">
+                </div>
+            </div>
+
+            <div id="page-questoes" class="page">
+                <div class="topics-list">
+                    <a onclick="showPage('page-geometria')" class="topic-button geometria">Geometria Plana</a>
+                    <a onclick="showPage('page-analise')" class="topic-button analise">Análise Gráfica</a>
+                    <a onclick="showPage('page-algebra')" class="topic-button algebra">Álgebra</a>
+                    <a onclick="showPage('page-combinatoria')" class="topic-button combinatoria">Análise Combinatória</a>
+                    <a onclick="showPage('page-probabilidade')" class="topic-button probabilidade">Teoria das Probabilidades</a>
+                    <a onclick="showPage('page-sequencias')" class="topic-button sequencias">Álgebra: Sequências e Séries</a>
+                    <a onclick="showPage('page-aritmetica')" class="topic-button aritmetica">Aritmética: Razão e Proporção</a>
+                    <a href="#" class="topic-button desafio">????</a>
+                </div>
+            </div>
+
+            <div id="page-geometria" class="page">
+               <div class="content-page geometria-bg">
+                  <h1>Geometria Plana</h1>
+                  <p>A geometria plana é a parte da matemática que estuda figuras no plano, ou seja, formas que têm altura e largura, mas não têm profundidade. Você já viu isso no papel, nas ruas, em móveis, na construção civil. É uma matemática super visual!</p> <br>
+                  <p><strong>As principais figuras são:</strong></p>
+                  <p>Triângulos (3 lados)</p>
+                  <p>Quadrados e retângulos (4 lados)</p>
+                  <p>Círculos</p>
+                  <p>Trapézios, losangos, paralelogramos, entre outros</p><br>
+                  <p>Com elas, aprendemos a calcular áreas, perímetros e ângulos.</p>
+                  <p>📌 Perímetro: soma dos lados da figura</p>
+                  <p>📌 Área: espaço que ela ocupa</p><br>
+                  <p><strong>🧠 Exemplos práticos:</strong></p>
+                  <p>🔸 Você quer colocar piso em um quarto retangular que tem 4 metros por 3 metros:</p>
+                  <p>➡️ Área = 4 × 3 = 12 m² (você vai precisar de 12 metros quadrados de piso)</p><br>
+                  <p>🔸 Um terreno é triangular, com base de 10 m e altura de 6 m:</p>
+                  <p>➡️ Área = (10 × 6) ÷ 2 = 30 m²</p><br>
+                  <p>🔸 Uma placa redonda tem raio de 7 cm:</p>
+                  <p>➡️ Área = π × 7² = 3,14 × 49 = 153,86 cm²</p>
+               </div>
+            </div>
+            
+            <div id="page-analise" class="page">
+               <div class="content-page analise-bg">
+                  <h1>Análise Gráfica</h1>
+                  <p>A análise gráfica é a habilidade de ler e interpretar dados visuais, como gráficos de linha, de barra, de pizza e até funções matemáticas no plano cartesiano.</p>
+                  <p><strong>Ela aparece:</strong></p>
+                  <p>No noticiário (economia, política)</p>
+                  <p>Em redes sociais (visualizações, engajamento)</p>
+                  <p>Em empresas (vendas, lucros)</p>
+                  <p>Em provas (gráficos de funções ou estatísticas)</p><br>
+                  <p>📈 <strong>Tipos comuns de gráficos:</strong></p>
+                  <p>🔹 Gráfico de barras: comparação direta</p>
+                  <p>🔹 Gráfico de linhas: mostra evolução no tempo</p>
+                  <p>🔹 Gráfico de pizza: mostra proporções</p>
+                  <p>🔹 Plano cartesiano: relaciona duas variáveis (como x e y)</p><br>
+                  <p>🧠 <strong>Exemplos práticos:</strong></p>
+                  <p>🔸 Um gráfico mostra que a venda de picolés sobe nos meses quentes.</p>
+                  <p>➡️ Isso indica uma tendência positiva com a temperatura.</p><br>
+                  <p>🔸 Você acompanha seu peso por semana e monta um gráfico de linha.</p>
+                  <p>➡️ Ele mostra se você está ganhando, mantendo ou perdendo peso com clareza.</p><br>
+                  <p>🔸 Um plano cartesiano mostra a função y = 2x + 1.</p>
+                  <p>➡️ Cada ponto (x, y) segue essa regra. Por exemplo, se x = 2, y = 5.</p>
+               </div>
+            </div>
+
+            <div id="page-algebra" class="page">
+                <div class="content-page algebra-bg">
+                   <h1>Álgebra</h1>
+                   <p>A álgebra é a parte da matemática que usa letras no lugar de números para representar situações gerais ou desconhecidas.</p>
+                   <p>Essas letras (como x, y, z) são chamadas de incógnitas. E o objetivo é descobrir quais números elas representam.</p>
+                   <p>🔎 x + 3 = 10 ➡️ x = 7 (porque 7 + 3 = 10)</p><br>
+                   <p><strong>🧠 Exemplos práticos:</strong></p>
+                   <p>🔸 "Tenho R$ 120 e gasto R$ 20 por semana. Em quantas semanas o dinheiro acaba?"<br>
+                   ➡️ 120 - 20x = 0 → x = 6 semanas</p><br>
+                   <p>🔸 "João tem o dobro da idade de Maria. Se Maria tem x anos, João tem 2x."<br>
+                   ➡️ Se Maria tem 5 anos, João tem 10.</p><br>
+                   <p>🔸 "A fórmula da velocidade é v = d ÷ t" (velocidade = distância ÷ tempo).<br>
+                   ➡️ Se você percorre 100 km em 2 horas: v = 100 ÷ 2 = 50 km/h</p><br>
+                   <p>Álgebra também é a base de funções, equações do 1º e 2º grau, sistemas, inequações e mais.</p>
+                </div>
+            </div>
+
+            <div id="page-combinatoria" class="page">
+                <div class="content-page combinatoria-bg">
+                   <h1>Análise Combinatória</h1>
+                   <p>A Análise Combinatória é a área da matemática que nos ensina a contar as diferentes maneiras de organizar ou escolher elementos de um conjunto, sem precisar listar uma por uma. É super útil para planejar e otimizar.</p><br>
+                   <p><strong>As ferramentas principais são:</strong></p>
+                   <p><strong>Princípio Fundamental da Contagem (PFC):</strong> Se um evento pode ocorrer de "m" maneiras e outro de "n", os dois juntos ocorrem de $m \times n$ maneiras.<br>
+                   ➡️ Exemplo: 3 blusas e 2 calças? $3 \times 2 = 6$ combinações.</p><br>
+                   <p><strong>Permutação:</strong> Usada quando a ordem importa.<br>
+                   ➡️ Exemplo: De quantas formas 3 amigos podem sentar em 3 cadeiras? $3 \times 2 \times 1 = 6$ formas (3!).</p><br>
+                   <p><strong>Combinação:</strong> Usada quando a ordem não importa.<br>
+                   ➡️ Exemplo: De um grupo de 5 pessoas, quantas duplas podemos formar? $(5 \times 4) \div 2 = 10$ duplas.</p><br>
+                   <p><strong>🧠 Exemplos práticos:</strong></p>
+                   <p>🔸 Quantas senhas diferentes de 4 dígitos você pode criar?</p>
+                   <p>🔸 Calcular as chances de ganhar em jogos de azar.</p>
+                </div>
+            </div>
+
+            <div id="page-probabilidade" class="page">
+                <div class="content-page probabilidade-bg">
+                   <h1>Teoria das Probabilidades</h1>
+                   <p>A Teoria das Probabilidades é a parte da matemática que estuda as chances de algo acontecer. Ela nos ajuda a tomar decisões mais inteligentes quando o futuro é incerto.</p>
+                   <p><strong>Como calcular:</strong><br>
+                   Probabilidade = (Nº de resultados favoráveis) / (Nº total de resultados possíveis)</p><br>
+                   <p><strong>🧠 Exemplos práticos:</strong></p>
+                   <p>🔸 Lançamento de uma moeda: Qual a probabilidade de sair "cara"?<br>
+                   ➡️ Resultados favoráveis: 1 (cara)<br>
+                   ➡️ Resultados totais: 2 (cara, coroa)<br>
+                   ➡️ Probabilidade: 1/2 = 50%</p><br>
+                   <p>🔸 Lançamento de um dado: Qual a probabilidade de sair o número 3?<br>
+                   ➡️ Resultados favoráveis: 1 (o nº 3)<br>
+                   ➡️ Resultados totais: 6 (1, 2, 3, 4, 5, 6)<br>
+                   ➡️ Probabilidade: 1/6 (aprox. 16,67%)</p>
+                </div>
+            </div>
+
+             <div id="page-sequencias" class="page">
+                <div class="content-page sequencias-bg">
+                    <h1>Álgebra: Sequências e Séries</h1>
+                    <p>Conteúdo sobre Sequências e Séries (PA, PG, etc.) será adicionado aqui em breve!</p>
+                </div>
+            </div>
+
+            <div id="page-aritmetica" class="page">
+                <div class="content-page aritmetica-bg">
+                   <h1>Aritmética: Razão e Proporção</h1>
+                   <p>Aritmética é a base da matemática. E dentro dela, razão e proporção são ferramentas super úteis para comparar coisas e dividir de forma justa.</p><br>
+                   <p><strong>O que é Razão?</strong></p>
+                   <p>Razão é uma comparação entre duas grandezas, usando divisão. É como dizer "para cada X de uma coisa, eu tenho Y de outra".<br>
+                   ➡️ Exemplo: A razão de açúcar para farinha é de 1 para 2 (1:2 ou 1/2).</p><br>
+                   <p><strong>E a Proporção?</strong></p>
+                   <p>Proporção é a igualdade entre duas razões. Usamos para manter a mesma relação.</p><br>
+                   <p>🔸 Exemplo: Se a razão de meninos para meninas é 2:3, e há 10 meninos, quantas meninas há?<br>
+                   ➡️ 2/3 = 10/x<br>
+                   ➡️ 2x = 30 ➡️ x = 15 meninas.</p>
+                </div>
+            </div>
+            
+            <div id="page-recompensas" class="page">
+                <div class="rewards-grid">
+                    <div class="reward-item">
+                        <img src="gatopeixe4.png" alt="Recompensa Gato com Peixe">
+                    </div>
+                    <div class="reward-item">
+                        <img src="gatopeixe4.png" alt="Recompensa Gato com Peixe">
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <nav class="bottom-nav">
+            <a onclick="showPage('page-home')"><img src="casa.png" alt="Início"></a>
+            
+            <a id="nav-questoes-button" onclick="showPage('page-questoes')"><img src="123.png" alt="Questões"></a>
+            <a id="nav-back-button" onclick="showPage('page-questoes')"><img src="img/back_arrow_icon.png" alt="Voltar"></a>
+
+            <a onclick="showPage('page-recompensas')"><img src="bau.png" alt="Recompensas"></a>
+        </nav>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica para alternar frases na página inicial
+            const quote1 = document.getElementById('quote1');
+            const quote2 = document.getElementById('quote2');
+
+            if (quote1 && quote2) {
+                setInterval(() => {
+                    quote1.classList.toggle('hidden');
+                    quote2.classList.toggle('hidden');
+                }, 5000); // Alterna a cada 5 segundos
+            }
+
+            // Mostra a página inicial por padrão
+            showPage('page-home');
+        });
+
+        function showPage(pageId) {
+            // Esconde todas as páginas
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Mostra a página solicitada
+            const newPage = document.getElementById(pageId);
+            if (newPage) {
+                newPage.classList.add('active');
+            }
+
+            // Lógica para trocar o botão de navegação do meio
+            const questoesButton = document.getElementById('nav-questoes-button');
+            const backButton = document.getElementById('nav-back-button');
+            
+            // Lista de IDs de todas as páginas de conteúdo
+            const contentPageIds = [
+                'page-geometria', 'page-analise', 'page-algebra', 
+                'page-combinatoria', 'page-probabilidade', 
+                'page-sequencias', 'page-aritmetica'
+            ];
+
+            if (contentPageIds.includes(pageId)) {
+                questoesButton.style.display = 'none';
+                backButton.style.display = 'inline-block';
+            } else {
+                questoesButton.style.display = 'inline-block';
+                backButton.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
